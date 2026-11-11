@@ -32,9 +32,7 @@ export const useRachaStore = create((set, get) => ({
 
   // Mutações: lançam o erro para a tela tratar (Alert, haptics etc.)
   criarRacha: async (dados) => {
-    const id = await service.criarRacha(dados);
-    await get().carregarRachas(dados.userId ?? null);
-    return id;
+    return service.criarRacha(dados);
   },
 
   atualizarRacha: async (id, dados) => {

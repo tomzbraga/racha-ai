@@ -17,7 +17,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="rachas"
         options={{
           title: "Meus Rachas",
           headerShown: false, // o Stack interno cuida do header

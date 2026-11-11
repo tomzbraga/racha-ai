@@ -1,6 +1,6 @@
 import {
   collection,
-  addDoc,
+  setDoc,
   getDocs,
   getDoc,
   doc,
@@ -11,7 +11,7 @@ import {
   arrayUnion,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "../firebaseConnection";
+import { db } from "./firebaseConnection";
 
 const rachasRef = collection(db, "rachas");
 
@@ -33,7 +33,8 @@ export async function criarRacha({
   gorjetaPercent = 0,
   userId = null,
 }) {
-  const ref = await addDoc(rachasRef, {
+  const ref = doc(rachasRef); // gera o id localmente
+  const gravacao = setDoc(ref, {
     nome,
     data: Timestamp.fromDate(data),
     participantes,
@@ -41,6 +42,15 @@ export async function criarRacha({
     userId,
     itens: [],
   });
+
+  // Rejeição rápida (ex.: permissão) cai no catch da tela.
+  // Se o servidor só demorar a confirmar, segue em frente após 3s.
+  await Promise.race([
+    gravacao,
+    new Promise((resolve) => setTimeout(resolve, 3000)),
+  ]);
+
+  gravacao.catch((e) => console.error("Erro ao gravar racha:", e));
   return ref.id;
 }
 
