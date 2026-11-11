@@ -15,6 +15,19 @@ import { db } from "./firebaseConnection";
 
 const rachasRef = collection(db, "rachas");
 
+const ESPERA_CONFIRMACAO_MS = 2000;
+
+// Espera a gravação por até 2s. Se o Firestore recusar antes disso
+// (ex.: permissão), o erro sobe para a tela. Se só demorar a confirmar,
+// segue em frente: a gravação continua pendente e é enviada assim que possível.
+function aguardarGravacao(gravacao) {
+  gravacao.catch((e) => console.error("Erro na gravação:", e));
+  return Promise.race([
+    gravacao,
+    new Promise((resolve) => setTimeout(resolve, ESPERA_CONFIRMACAO_MS)),
+  ]);
+}
+
 // Converte o documento do Firestore para objeto JS (Timestamp -> Date)
 function mapDoc(snap) {
   const d = snap.data();
@@ -34,23 +47,16 @@ export async function criarRacha({
   userId = null,
 }) {
   const ref = doc(rachasRef); // gera o id localmente
-  const gravacao = setDoc(ref, {
-    nome,
-    data: Timestamp.fromDate(data),
-    participantes,
-    gorjetaPercent,
-    userId,
-    itens: [],
-  });
-
-  // Rejeição rápida (ex.: permissão) cai no catch da tela.
-  // Se o servidor só demorar a confirmar, segue em frente após 3s.
-  await Promise.race([
-    gravacao,
-    new Promise((resolve) => setTimeout(resolve, 3000)),
-  ]);
-
-  gravacao.catch((e) => console.error("Erro ao gravar racha:", e));
+  await aguardarGravacao(
+    setDoc(ref, {
+      nome,
+      data: Timestamp.fromDate(data),
+      participantes,
+      gorjetaPercent,
+      userId,
+      itens: [],
+    }),
+  );
   return ref.id;
 }
 
@@ -75,12 +81,12 @@ export async function atualizarRacha(id, dados) {
   if (payload.data instanceof Date) {
     payload.data = Timestamp.fromDate(payload.data);
   }
-  await updateDoc(doc(db, "rachas", id), payload);
+  await aguardarGravacao(updateDoc(doc(db, "rachas", id), payload));
 }
 
 // DELETE
 export async function excluirRacha(id) {
-  await deleteDoc(doc(db, "rachas", id));
+  await aguardarGravacao(deleteDoc(doc(db, "rachas", id)));
 }
 
 // ITENS: adicionar
@@ -94,7 +100,9 @@ export async function adicionarItem(
     valor,
     consumidoPor,
   };
-  await updateDoc(doc(db, "rachas", rachaId), { itens: arrayUnion(item) });
+  await aguardarGravacao(
+    updateDoc(doc(db, "rachas", rachaId), { itens: arrayUnion(item) }),
+  );
   return item;
 }
 
@@ -103,5 +111,5 @@ export async function removerItem(rachaId, itemId) {
   const racha = await buscarRacha(rachaId);
   if (!racha) return;
   const itens = racha.itens.filter((i) => i.id !== itemId);
-  await updateDoc(doc(db, "rachas", rachaId), { itens });
+  await aguardarGravacao(updateDoc(doc(db, "rachas", rachaId), { itens }));
 }
