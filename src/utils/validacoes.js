@@ -11,9 +11,13 @@ export function validarRacha({ nome, participantes }) {
   return erros;
 }
 
-// Aceita "12,50" ou "12.50"
+// Aceita "12,50", "12.50" e "1.234,56" (ponto como milhar, vírgula como decimal)
 export function converterValor(texto) {
-  return parseFloat(String(texto).replace(",", "."));
+  const limpo = String(texto).trim().replace(/[^\d.,]/g, "");
+  const normalizado = limpo.includes(",")
+    ? limpo.replace(/\./g, "").replace(",", ".")
+    : limpo;
+  return Number(normalizado);
 }
 
 export function validarItem({ descricao, valor, consumidoPor }) {
