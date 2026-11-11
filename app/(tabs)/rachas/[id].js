@@ -147,7 +147,8 @@ export default function DetalheRacha() {
         <Text style={styles.nome}>{racha.nome}</Text>
         <Text style={styles.detalhe}>
           {racha.data ? racha.data.toLocaleDateString("pt-BR") : "Sem data"} •{" "}
-          {racha.participantes.length} pessoas
+          {racha.participantes.length}{" "}
+          {racha.participantes.length === 1 ? "pessoa" : "pessoas"}
         </Text>
         <Text style={styles.participantes}>
           {racha.participantes.join(", ")}

@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -12,4 +12,16 @@ const firebaseConfig = {
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export const db = getFirestore(app);
+// Em React Native a conexão padrão do Firestore às vezes não confirma as
+// gravações (loading infinito). O auto-detect usa long polling quando preciso.
+// initializeFirestore só pode rodar uma vez; no hot reload cai no getFirestore.
+let firestore;
+try {
+  firestore = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+  });
+} catch (e) {
+  firestore = getFirestore(app);
+}
+
+export const db = firestore;

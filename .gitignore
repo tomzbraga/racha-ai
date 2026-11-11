@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (credenciais do Firebase NÃO vão pro Git)
+.env
 .env*.local
 
 # typescript
