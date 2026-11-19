@@ -83,16 +83,9 @@ Escaneie o QR code com o Expo Go ou pressione `a` (Android) / `i` (iOS) para abr
 
 ## Fluxo de trabalho (Git Flow)
 
-- `main`: versão estável
-- `develop`: integração
+- `develop`: versão estável
 - `feature/*`: novas funcionalidades, integradas via Pull Request
 
 ## Equipe
 
-- <Nome 1>
-- <Nome 2>
-- <Nome 3>
-
-## Demonstração
-
-🎥 <link_do_video_de_demonstracao>
+- Lucas Tomaz Braga - 2514290003
